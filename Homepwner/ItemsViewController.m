@@ -18,9 +18,11 @@
     self = [super initWithStyle:UITableViewStyleGrouped];
     if (self)
     {
-        // Add 5 random items to the ItemStore
+        /*
+        Chapter 9: Add 5 random items to the ItemStore
         for(int i = 0; i < 5; i++)
             [[ItemStore sharedStore] createItem];
+        */
     }
     return self;
 }
@@ -54,6 +56,82 @@ numberOfRowsInSection:(NSInteger)section
     Item *p = [[[ItemStore sharedStore] allItems] objectAtIndex:[indexPath row]];
     [[cell textLabel] setText:[p description]];
     return cell;
+}
+
+// Load the headerView
+- (UIView *)headerView
+{
+    // if the headerView is not loaded yet
+    if(!headerView)
+        [[NSBundle mainBundle] loadNibNamed:@"HeaderView" owner:self options:nil];
+    return headerView;
+}
+
+// Two methods set headevView as the header view of the table.
+
+- (UIView *)tableView:(UITableView *)tv viewForHeaderInSection:(NSInteger)section
+{
+    return [self headerView];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    // The height of the header view should be determined from the height of the view in the XIB file.
+    return [[self headerView] bounds].size.height;
+}
+
+- (void)toggleEdittingMode:(id)sender
+{
+    // If we are currently in editing mode
+    if([self isEditing])
+    {
+        // Change text of button to inform user of state
+        [sender setTitle:@"Edit" forState:UIControlStateNormal];
+        // Turn off editing mode
+        [self setEditing:NO animated:YES];
+    }
+    else
+    {
+        // Change text of button to inform user of state
+        [sender setTitle:@"Done" forState:UIControlStateNormal];
+        // Enter editing mode
+        [self setEditing:YES animated:YES];
+    }
+}
+
+- (IBAction)addNewItem:(id)sender
+{
+    // Create a new Item and add it to the store
+    Item *newItem = [[ItemStore sharedStore] createItem];
+    
+    // Figure out where that item is in the array
+    int lastRow = [[[ItemStore sharedStore] allItems] indexOfObject:newItem];
+    NSIndexPath *ip = [NSIndexPath indexPathForRow:lastRow inSection:0];
+    
+    // Insert this new row into the table.
+    [[self tableView] insertRowsAtIndexPaths:[NSArray arrayWithObject:ip]
+                            withRowAnimation:UITableViewRowAnimationTop];
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // If the table view is asking to commit a delete command...
+    if(editingStyle == UITableViewCellEditingStyleDelete)
+    {
+        ItemStore *ps = [ItemStore sharedStore];
+        NSArray *items = [ps allItems];
+        Item *p = [items objectAtIndex:[indexPath row]];
+        [ps removeItem:p];
+        // Remove the row from the table view with an animation
+        [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    }
+}
+
+- (void)tableView:(UITableView *)tableView
+moveRowAtIndexPath:(NSIndexPath *)fromIndexPath
+       toIndexPath:(NSIndexPath *)toIndexPath
+{
+    [[ItemStore sharedStore] moveItemAtIndex:[fromIndexPath row] toIndex:[toIndexPath row]];
 }
 
 @end

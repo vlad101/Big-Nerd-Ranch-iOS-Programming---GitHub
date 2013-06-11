@@ -23,6 +23,21 @@
         for(int i = 0; i < 5; i++)
             [[ItemStore sharedStore] createItem];
         */
+        
+        // Set the tile to Homepwner
+        UINavigationItem *n = [self navigationItem];
+        [n setTitle:@"Homepwner"];
+        
+        // Create a new bar button item that will send addNewItem: to ItemsViewController
+        UIBarButtonItem *bbi = [[UIBarButtonItem alloc]
+                                initWithBarButtonSystemItem:UIBarButtonSystemItemAdd
+                                target:self
+                                action:@selector(addNewItem:)];
+        // Set this bar button item as the right item in the navigation item
+        [[self navigationItem] setRightBarButtonItem:bbi];
+        
+        // Set this bar button item as the left item in the navigation item
+        [[self navigationItem] setLeftBarButtonItem:[self editButtonItem]];
     }
     return self;
 }
@@ -69,6 +84,10 @@ numberOfRowsInSection:(NSInteger)section
 
 // Two methods set headevView as the header view of the table.
 
+/*
+ 
+ Chapter 9 - the following three methods are replaced with UINavigationBar
+ 
 - (UIView *)tableView:(UITableView *)tv viewForHeaderInSection:(NSInteger)section
 {
     return [self headerView];
@@ -98,6 +117,7 @@ numberOfRowsInSection:(NSInteger)section
         [self setEditing:YES animated:YES];
     }
 }
+ */
 
 - (IBAction)addNewItem:(id)sender
 {
@@ -132,6 +152,26 @@ moveRowAtIndexPath:(NSIndexPath *)fromIndexPath
        toIndexPath:(NSIndexPath *)toIndexPath
 {
     [[ItemStore sharedStore] moveItemAtIndex:[fromIndexPath row] toIndex:[toIndexPath row]];
+}
+
+- (void)tableView:(UITableView *)aTableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // Set DetailViewController to have an item before viewWillAppear gets called
+    DetailViewController *detailViewController = [[DetailViewController alloc] init];
+    NSArray *items = [[ItemStore sharedStore] allItems];
+    Item *selectedItem = [items objectAtIndex:[indexPath row]];
+    
+    // Give detail view controller a pointer to the view object in row
+    [detailViewController setItem:selectedItem];
+    
+    // Push it into the top of the navigation controller's stack
+    [[self navigationController] pushViewController:detailViewController animated:YES];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [[self tableView] reloadData];
 }
 
 @end

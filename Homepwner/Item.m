@@ -9,7 +9,7 @@
 #import "Item.h"
 
 @implementation Item
-@synthesize itemName, serialNumber, dateCreated, valueInDollars;
+@synthesize itemName, serialNumber, dateCreated, valueInDollars, imageKey;
 
 + (id)randomItem
 {
